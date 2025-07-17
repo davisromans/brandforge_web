@@ -168,25 +168,130 @@ const carouselItems = ref([
   { src: auth3 },
 ]);
 
-const handleLogin = () => {
-  console.log('Login Data:', {
-    identifier: loginIdentifier.value,
-    password: password.value,
-  });
-   router.push('/homepage');
+const handleLogin = async () => {
+  if (!loginIdentifier.value || !password.value) {
+    alert('Please enter both email/phone number and password.');
+    return;
+  }
 
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        identifier: loginIdentifier.value,
+        password: password.value,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      alert('Login successful!');
+      localStorage.setItem('token', data.token); // Store the JWT token
+      router.push('/homepage'); // Redirect to homepage after successful login
+    } else {
+      alert(`Login failed: ${data.message}`);
+    }
+  } catch (error) {
+    console.error('Error during login request:', error);
+    alert('An error occurred during login. Please try again.');
+  }
 };
 
+// Function to handle Google Sign-In
 const signInWithGoogle = () => {
-  alert('Signing in with Google...');
+  if (window.google && window.google.accounts && window.google.accounts.id) {
+    window.google.accounts.id.initialize({
+      client_id: 'YOUR_GOOGLE_CLIENT_ID', // Replace with your actual Google Client ID
+      callback: handleGoogleCredentialResponse,
+      auto_select: false,
+    });
+    window.google.accounts.id.prompt();
+  } else {
+    alert('Google Sign-In script not loaded yet. Please try again.');
+  }
 };
 
+// Callback function for Google Sign-in
+const handleGoogleCredentialResponse = async (response) => {
+  console.log('Encoded JWT ID token: ' + response.credential);
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}auth/social`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        token: response.credential,
+        provider: 'google',
+      }),
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      alert(data.message);
+      localStorage.setItem('token', data.token);
+      router.push('/homepage');
+    } else {
+      alert(`Google Sign-in failed: ${data.message}`);
+    }
+  } catch (error) {
+    console.error('Error sending Google credential to backend:', error);
+    alert('An error occurred during Google Sign-in.');
+  }
+};
+
+// Function to handle Apple Sign-In
 const signInWithApple = () => {
-  alert('Signing in with Apple...');
+  if (window.AppleID && window.AppleID.auth) {
+    window.AppleID.auth.signIn()
+      .then((response) => {
+        console.log('Apple Sign-In Response:', response);
+        sendAppleAuthCodeToBackend(response.authorization);
+      })
+      .catch((error) => {
+        console.error('Apple Sign-In failed:', error);
+        alert('Apple Sign-In was cancelled or failed.');
+      });
+  } else {
+    alert('Apple Sign-In script not loaded yet. Please try again.');
+  }
+};
+
+// Function to send Apple authorization data to your backend
+const sendAppleAuthCodeToBackend = async (authorization) => {
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}auth/social`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        code: authorization.code,
+        id_token: authorization.id_token,
+        provider: 'apple',
+      }),
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      alert(data.message);
+      localStorage.setItem('token', data.token);
+      router.push('/homepage');
+    } else {
+      alert(`Apple Sign-in failed: ${data.message}`);
+    }
+  } catch (error) {
+    console.error('Error sending Apple authorization to backend:', error);
+    alert('An error occurred during Apple Sign-in.');
+  }
 };
 
 const goBackToWebsite = () => {
-  router.push('/');
+  router.push('/homepage'); // Assuming this should go to the homepage for BrandForge AI
 };
 </script>
 

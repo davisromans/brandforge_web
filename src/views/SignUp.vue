@@ -168,7 +168,7 @@
             color="#7C3AED"
             size="large"
             class="create-account-button"
-            :disabled="!agreeToTerms || !phoneNumber"
+            :disabled="!agreeToTerms || !phoneNumber || !password"
           >
             Create account
           </v-btn>
@@ -250,33 +250,146 @@ const countryCodes = [
   { title: 'South Africa (+27)', value: '+27' },
 ];
 
-const handleSignUp = () => {
+const handleSignUp = async () => {
   if (!phoneNumber.value) {
     alert('Please enter your phone number.');
     return;
+  }
+  if (!password.value) {
+    alert('Please enter a password.');
+    return;
+  }
+  if (password.value.length < 6) {
+      alert('Password must be at least 6 characters long.');
+      return;
   }
   if (!agreeToTerms.value) {
     alert('Please agree to the Terms & Conditions.');
     return;
   }
 
-  console.log('Sign Up Data:', {
-    firstName: firstName.value,
-    lastName: lastName.value,
-    fullPhoneNumber: selectedCountryCode.value + phoneNumber.value,
-    email: email.value || 'Not provided',
-    password: password.value,
-    agreeToTerms: agreeToTerms.value,
-  });
-  alert('Sign up form submitted! (Check console for data)');
+  try {
+    const fullPhoneNumber = selectedCountryCode.value + phoneNumber.value;
+    const res = await fetch(`${import.meta.env.BASE_URL}auth/register-initial`, { // Hypothetical new endpoint
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        firstName: firstName.value,
+        lastName: lastName.value,
+        phoneNumber: fullPhoneNumber,
+        email: email.value || null,
+        password: password.value,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      alert(data.message);
+      if (data.action === 'validate account') {
+         router.push(`/verify-otp?phone=${encodeURIComponent(fullPhoneNumber)}`);
+      } else {
+         localStorage.setItem('token', data.token);
+         router.push('/homepage');
+      }
+    } else {
+      alert(`Sign up failed: ${data.message}`);
+    }
+  } catch (error) {
+    console.error('Error during sign up request:', error);
+    alert('An error occurred during sign up. Please try again.');
+  }
 };
 
+// Function to handle Google Sign-In
 const signInWithGoogle = () => {
-  alert('Signing in with Google...');
+  if (window.google && window.google.accounts && window.google.accounts.id) {
+    window.google.accounts.id.initialize({
+      client_id: 'YOUR_GOOGLE_CLIENT_ID', // Replace with your actual Google Client ID
+      callback: handleGoogleCredentialResponse,
+      auto_select: false,
+    });
+    window.google.accounts.id.prompt();
+  } else {
+    alert('Google Sign-In script not loaded yet. Please try again.');
+  }
 };
 
+// Callback function for Google Sign-in
+const handleGoogleCredentialResponse = async (response) => {
+  console.log('Encoded JWT ID token: ' + response.credential);
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}auth/social`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        token: response.credential,
+        provider: 'google',
+      }),
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      alert(data.message);
+      localStorage.setItem('token', data.token);
+      router.push('/homepage');
+    } else {
+      alert(`Google Sign-in failed: ${data.message}`);
+    }
+  } catch (error) {
+    console.error('Error sending Google credential to backend:', error);
+    alert('An error occurred during Google Sign-in.');
+  }
+};
+
+// Function to handle Apple Sign-In
 const signInWithApple = () => {
-  alert('Signing in with Apple...');
+  if (window.AppleID && window.AppleID.auth) {
+    window.AppleID.auth.signIn()
+      .then((response) => {
+        console.log('Apple Sign-In Response:', response);
+        sendAppleAuthCodeToBackend(response.authorization);
+      })
+      .catch((error) => {
+        console.error('Apple Sign-In failed:', error);
+        alert('Apple Sign-In was cancelled or failed.');
+      });
+  } else {
+    alert('Apple Sign-In script not loaded yet. Please try again.');
+  }
+};
+
+// Function to send Apple authorization data to your backend
+const sendAppleAuthCodeToBackend = async (authorization) => {
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}auth/social`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        code: authorization.code,
+        id_token: authorization.id_token,
+        provider: 'apple',
+      }),
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      alert(data.message);
+      localStorage.setItem('token', data.token);
+      router.push('/homepage');
+    } else {
+      alert(`Apple Sign-in failed: ${data.message}`);
+    }
+  } catch (error) {
+    console.error('Error sending Apple authorization to backend:', error);
+    alert('An error occurred during Apple Sign-in.');
+  }
 };
 
 const goBackToWebsite = () => {

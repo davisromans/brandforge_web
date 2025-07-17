@@ -5,6 +5,7 @@ import HomePage from '../views/HomePage.vue'
 import LogoCraft from '../views/LogoCraft.vue'
 import LeboGpt from '../views/LeboGpt.vue'
 import Postra from '../views/PostraView.vue'
+import OtpVerification from '../views/otpVerification.vue' // Import the new OTP verification component
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,6 +39,12 @@ const router = createRouter({
       path: '/studio/postra',
       name: 'postra',
       component: Postra,
+    },
+        {
+      path: '/verify-otp',
+      name: 'verify-otp',
+      component: OtpVerification,
+      props: true 
     },
   ],
 })
