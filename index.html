@@ -1,13 +1,34 @@
 <!DOCTYPE html>
-<html lang="">
+<html lang="en">
   <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link rel="icon" href="/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BrandForge AI</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script type="text/javascript" src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.js"></script>
   </head>
   <body>
+    <noscript>
+      <strong>We're sorry but BrandForge AI doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
+
+    <script>
+      // Apple ID Init remains in index.html, as it's a global init
+      // Replace YOUR_APPLE_CLIENT_ID and YOUR_APPLE_REDIRECT_URI
+      AppleID.auth.init({
+        clientId : 'YOUR_APPLE_CLIENT_ID', // Your Service ID (e.g., com.example.service)
+        scope : 'name email', // Request name and email (only sent on first sign-in)
+        redirectURI : 'YOUR_APPLE_REDIRECT_URI_ON_BACKEND', // Your backend endpoint to handle the Apple callback
+        state : 'state_parameter', // A unique string to prevent CSRF attacks
+        usePopup : true // Or false for redirect
+      });
+
+      // GSI INITIALIZATION IS NOW MOVED TO src/main.js
+      // The global callback 'window.handleGoogleCredentialResponse' will be defined in main.js
+    </script>
   </body>
 </html>

@@ -149,13 +149,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import auth1 from '@/assets/auth1.jpg';
 import auth2 from '@/assets/auth2.jpg';
 import auth3 from '@/assets/auth3.jpg';
 
-const loginIdentifier = ref(''); // Can be email or phone number
+const loginIdentifier = ref('');
 const password = ref('');
 const showPassword = ref(false);
 const currentCarouselIndex = ref(0);
@@ -175,7 +175,7 @@ const handleLogin = async () => {
   }
 
   try {
-    const res = await fetch(`${import.meta.env.BASE_URL}auth/login`, {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -190,8 +190,8 @@ const handleLogin = async () => {
 
     if (data.success) {
       alert('Login successful!');
-      localStorage.setItem('token', data.token); // Store the JWT token
-      router.push('/homepage'); // Redirect to homepage after successful login
+      localStorage.setItem('token', data.token);
+      router.push('/homepage');
     } else {
       alert(`Login failed: ${data.message}`);
     }
@@ -201,25 +201,23 @@ const handleLogin = async () => {
   }
 };
 
+let googleInitInterval = null; // To hold the interval ID for GSI polling
+
 // Function to handle Google Sign-In
 const signInWithGoogle = () => {
   if (window.google && window.google.accounts && window.google.accounts.id) {
-    window.google.accounts.id.initialize({
-      client_id: 'YOUR_GOOGLE_CLIENT_ID', // Replace with your actual Google Client ID
-      callback: handleGoogleCredentialResponse,
-      auto_select: false,
-    });
-    window.google.accounts.id.prompt();
+    window.google.accounts.id.prompt(); // Trigger the One Tap or pop-up
   } else {
-    alert('Google Sign-In script not loaded yet. Please try again.');
+    alert('Google Sign-In functionality is not ready. Please wait a moment and try again.');
   }
 };
 
-// Callback function for Google Sign-in
-const handleGoogleCredentialResponse = async (response) => {
+// This function will be called by the global window.onload callback (via custom event)
+const handleGoogleCredentialResponse = async (event) => {
+  const response = event.detail; // Access the response from the custom event detail
   console.log('Encoded JWT ID token: ' + response.credential);
   try {
-    const res = await fetch(`${import.meta.env.BASE_URL}auth/social`, {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}auth/social`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -264,16 +262,18 @@ const signInWithApple = () => {
 // Function to send Apple authorization data to your backend
 const sendAppleAuthCodeToBackend = async (authorization) => {
   try {
-    const res = await fetch(`${import.meta.env.BASE_URL}auth/social`, {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}auth/social`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        code: authorization.code,
-        id_token: authorization.id_token,
-        provider: 'apple',
-      }),
+            code: authorization.code,
+            id_token: authorization.id_token,
+            name: authorization.user?.name ? `${authorization.user.name.firstName || ''} ${authorization.user.name.lastName || ''}`.trim() : undefined,
+            email: authorization.user?.email || undefined,
+            provider: 'apple',
+        }),
     });
 
     const data = await res.json();
@@ -291,8 +291,32 @@ const sendAppleAuthCodeToBackend = async (authorization) => {
 };
 
 const goBackToWebsite = () => {
-  router.push('/homepage'); // Assuming this should go to the homepage for BrandForge AI
+  router.push('/homepage');
 };
+
+onMounted(() => {
+  // Listen for the custom event dispatched from public/index.html's window.onload
+  window.addEventListener('google-credential-response', handleGoogleCredentialResponse);
+
+  // Poll for the Google Identity Services library to be ready
+  googleInitInterval = setInterval(() => {
+    if (window.google && window.google.accounts && window.google.accounts.id) {
+      // GSI is ready, clear the interval
+      clearInterval(googleInitInterval);
+      console.log('Google Identity Services detected and ready in AuthPage component.');
+    } else {
+      // console.log('Waiting for Google Identity Services in AuthPage...'); // Uncomment for detailed debugging
+    }
+  }, 100); // Check every 100ms
+});
+
+onUnmounted(() => {
+  window.removeEventListener('google-credential-response', handleGoogleCredentialResponse);
+  // Clear the interval if the component unmounts before GSI is ready
+  if (googleInitInterval) {
+    clearInterval(googleInitInterval);
+  }
+});
 </script>
 
 <style scoped>
@@ -369,6 +393,7 @@ const goBackToWebsite = () => {
   flex-direction: column;
   justify-content: space-between;
   padding: 2rem;
+    color: white; /* Ensure text is visible on overlay */
 }
 @media (min-width: 640px) {
   .overlay-content {
@@ -551,6 +576,7 @@ const goBackToWebsite = () => {
   margin: 0 1rem;
   color: #6B7280;
   font-size: 0.875rem;
+    color: white; /* Ensure text is visible on overlay */
 }
 
 .social-buttons-container-vertical {

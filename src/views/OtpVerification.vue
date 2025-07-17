@@ -65,7 +65,7 @@ const handleOtpVerification = async () => {
   }
 
   try {
-    const res = await fetch(`${import.meta.env.BASE_URL}auth/verify-otp`, {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}auth/verify-otp`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -93,7 +93,7 @@ const handleOtpVerification = async () => {
 
 const resendOtp = async () => {
   try {
-    const res = await fetch(`${import.meta.env.BASE_URL}auth/resend-otp`, {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}auth/resend-otp`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
