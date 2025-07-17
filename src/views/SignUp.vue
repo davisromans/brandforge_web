@@ -181,18 +181,7 @@
         </div>
 
         <div class="social-buttons-container-vertical">
-          <v-btn
-            block
-            size="large"
-            class="social-button"
-            prepend-icon="mdi-google"
-            bg-color="#1a1a1a"
-            @click="signInWithGoogle"
-            variant="outlined"
-            color="#4B5563"
-          >
-            Google
-          </v-btn>
+          <div id="google-signin-button" class="social-button-container"></div>
           <v-btn
             block
             size="large"
@@ -212,7 +201,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'; // Import onUnmounted
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import auth1 from '@/assets/auth1.jpg';
 import auth2 from '@/assets/auth2.jpg';
@@ -270,7 +259,7 @@ const handleSignUp = async () => {
 
   try {
     const fullPhoneNumber = selectedCountryCode.value + phoneNumber.value;
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}auth/register-initial`, { // Calling the new initialRegister endpoint
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}auth/register-initial`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -279,7 +268,7 @@ const handleSignUp = async () => {
         firstName: firstName.value,
         lastName: lastName.value,
         phoneNumber: fullPhoneNumber,
-        email: email.value || null, // Send null if email is optional and not provided
+        email: email.value || null,
         password: password.value,
       }),
     });
@@ -303,20 +292,20 @@ const handleSignUp = async () => {
   }
 };
 
-let googleInitInterval = null; // To hold the interval ID for GSI polling
+let googleInitInterval = null;
 
-// Function to handle Google Sign-In
-const signInWithGoogle = () => {
-  if (window.google && window.google.accounts && window.google.accounts.id) {
-    window.google.accounts.id.prompt(); // Trigger the One Tap or pop-up
-  } else {
-    alert('Google Sign-In functionality is not ready. Please wait a moment and try again.');
-  }
-};
+// The signInWithGoogle function is removed as Google's library will handle the button click.
+// const signInWithGoogle = () => {
+//   if (window.google && window.google.accounts && window.google.accounts.id) {
+//     window.google.accounts.id.prompt();
+//   } else {
+//     alert('Google Sign-In functionality is not ready. Please wait a moment and try again.');
+//   }
+// };
 
 // This function will be called by the global window.onload callback (via custom event)
 const handleGoogleCredentialResponse = async (event) => {
-  const response = event.detail; // Access the response from the custom event detail
+  const response = event.detail;
   console.log('Encoded JWT ID token: ' + response.credential);
   try {
     const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}auth/social`, {
@@ -404,10 +393,26 @@ onMounted(() => {
     if (window.google && window.google.accounts && window.google.accounts.id) {
       clearInterval(googleInitInterval);
       console.log('Google Identity Services detected and ready in SignUp component.');
+      // Manually trigger button rendering in case it wasn't available when main.js ran
+      const googleButtonDiv = document.getElementById('google-signin-button');
+      if (googleButtonDiv && googleButtonDiv.children.length === 0) { // Only render if not already rendered
+        window.google.accounts.id.renderButton(
+          googleButtonDiv,
+          {
+            type: 'standard',
+            size: 'large',
+            text: 'signup_with', // Changed to signup_with for signup page
+            shape: 'pill',
+            theme: 'outline',
+            locale: 'en',
+          }
+        );
+        console.log('Google Sign-In button manually rendered in SignUp component.');
+      }
     } else {
-      // console.log('Waiting for Google Identity Services in SignUp...'); // Uncomment for detailed debugging
+      // console.log('Waiting for Google Identity Services in SignUp...');
     }
-  }, 100); // Check every 100ms
+  }, 100);
 });
 
 onUnmounted(() => {
