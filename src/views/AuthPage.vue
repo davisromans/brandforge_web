@@ -154,6 +154,7 @@ import { useRouter } from 'vue-router';
 import auth1 from '@/assets/auth1.jpg';
 import auth2 from '@/assets/auth2.jpg';
 import auth3 from '@/assets/auth3.jpg';
+import { useAuthStore } from '@/stores/auth'; // Import the auth store
 
 const loginIdentifier = ref('');
 const password = ref('');
@@ -161,6 +162,7 @@ const showPassword = ref(false);
 const currentCarouselIndex = ref(0);
 
 const router = useRouter();
+const authStore = useAuthStore(); // Initialize the auth store
 
 const carouselItems = ref([
   { src: auth1 },
@@ -174,31 +176,9 @@ const handleLogin = async () => {
     return;
   }
 
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        identifier: loginIdentifier.value,
-        password: password.value,
-      }),
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      alert('Login successful!');
-      localStorage.setItem('token', data.token);
-      router.push('/homepage');
-    } else {
-      alert(`Login failed: ${data.message}`);
-    }
-  } catch (error) {
-    console.error('Error during login request:', error);
-    alert('An error occurred during login. Please try again.');
-  }
+  // Dispatch login action from the store
+  await authStore.login(loginIdentifier.value, password.value);
+  // Redirection is handled inside the store action, so no need for router.push here
 };
 
 let googleInitInterval = null; // To hold the interval ID for GSI polling
@@ -216,30 +196,11 @@ const signInWithGoogle = () => {
 const handleGoogleCredentialResponse = async (event) => {
   const response = event.detail; // Access the response from the custom event detail
   console.log('Encoded JWT ID token: ' + response.credential);
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}auth/social`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        token: response.credential,
-        provider: 'google',
-      }),
-    });
-
-    const data = await res.json();
-    if (data.success) {
-      alert(data.message);
-      localStorage.setItem('token', data.token);
-      router.push('/homepage');
-    } else {
-      alert(`Google Sign-in failed: ${data.message}`);
-    }
-  } catch (error) {
-    console.error('Error sending Google credential to backend:', error);
-    alert('An error occurred during Google Sign-in.');
-  }
+  // Dispatch socialAuth action from the store for Google
+  await authStore.socialAuth({
+    token: response.credential,
+    provider: 'google',
+  });
 };
 
 // Function to handle Apple Sign-In
@@ -261,33 +222,14 @@ const signInWithApple = () => {
 
 // Function to send Apple authorization data to your backend
 const sendAppleAuthCodeToBackend = async (authorization) => {
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}auth/social`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-            code: authorization.code,
-            id_token: authorization.id_token,
-            name: authorization.user?.name ? `${authorization.user.name.firstName || ''} ${authorization.user.name.lastName || ''}`.trim() : undefined,
-            email: authorization.user?.email || undefined,
-            provider: 'apple',
-        }),
-    });
-
-    const data = await res.json();
-    if (data.success) {
-      alert(data.message);
-      localStorage.setItem('token', data.token);
-      router.push('/homepage');
-    } else {
-      alert(`Apple Sign-in failed: ${data.message}`);
-    }
-  } catch (error) {
-    console.error('Error sending Apple authorization to backend:', error);
-    alert('An error occurred during Apple Sign-in.');
-  }
+  // Dispatch socialAuth action from the store for Apple
+  await authStore.socialAuth({
+    code: authorization.code,
+    id_token: authorization.id_token,
+    name: authorization.user?.name ? `${authorization.user.name.firstName || ''} ${authorization.user.name.lastName || ''}`.trim() : undefined,
+    email: authorization.user?.email || undefined,
+    provider: 'apple',
+  });
 };
 
 const goBackToWebsite = () => {

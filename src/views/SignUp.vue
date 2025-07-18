@@ -206,6 +206,7 @@ import { useRouter } from 'vue-router';
 import auth1 from '@/assets/auth1.jpg';
 import auth2 from '@/assets/auth2.jpg';
 import auth3 from '@/assets/auth3.jpg';
+import { useAuthStore } from '@/stores/auth'; // Import the auth store
 
 const firstName = ref('');
 const lastName = ref('');
@@ -218,6 +219,7 @@ const selectedCountryCode = ref('+255');
 const currentCarouselIndex = ref(0);
 
 const router = useRouter();
+const authStore = useAuthStore(); // Initialize the auth store
 
 const carouselItems = ref([
   { src: auth1 },
@@ -257,39 +259,21 @@ const handleSignUp = async () => {
     return;
   }
 
-  try {
-    const fullPhoneNumber = selectedCountryCode.value + phoneNumber.value;
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}auth/register-initial`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        firstName: firstName.value,
-        lastName: lastName.value,
-        phoneNumber: fullPhoneNumber,
-        email: email.value || null,
-        password: password.value,
-      }),
-    });
+  const fullPhoneNumber = selectedCountryCode.value + phoneNumber.value;
 
-    const data = await res.json();
+  // Dispatch signup action from the store
+  const result = await authStore.signup({
+    firstName: firstName.value,
+    lastName: lastName.value,
+    phoneNumber: fullPhoneNumber,
+    email: email.value || null,
+    password: password.value,
+  });
 
-    if (data.success) {
-      alert(data.message);
-      if (data.action === 'validate account') {
-         router.push(`/verify-otp?phone=${encodeURIComponent(fullPhoneNumber)}`);
-      } else {
-         localStorage.setItem('token', data.token);
-         router.push('/homepage');
-      }
-    } else {
-      alert(`Sign up failed: ${data.message}`);
-    }
-  } catch (error) {
-    console.error('Error during sign up request:', error);
-    alert('An error occurred during sign up. Please try again.');
+  if (result.success && result.action === 'verify-otp') {
+      router.push(`/verify-otp?phone=${encodeURIComponent(fullPhoneNumber)}`);
   }
+  // If result.action is 'logged-in', redirection is handled by the store
 };
 
 let googleInitInterval = null;
@@ -307,30 +291,11 @@ let googleInitInterval = null;
 const handleGoogleCredentialResponse = async (event) => {
   const response = event.detail;
   console.log('Encoded JWT ID token: ' + response.credential);
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}auth/social`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        token: response.credential,
-        provider: 'google',
-      }),
-    });
-
-    const data = await res.json();
-    if (data.success) {
-      alert(data.message);
-      localStorage.setItem('token', data.token);
-      router.push('/homepage');
-    } else {
-      alert(`Google Sign-in failed: ${data.message}`);
-    }
-  } catch (error) {
-    console.error('Error sending Google credential to backend:', error);
-    alert('An error occurred during Google Sign-in.');
-  }
+  // Dispatch socialAuth action from the store for Google
+  await authStore.socialAuth({
+    token: response.credential,
+    provider: 'google',
+  });
 };
 
 // Function to handle Apple Sign-In
@@ -352,33 +317,14 @@ const signInWithApple = () => {
 
 // Function to send Apple authorization data to your backend
 const sendAppleAuthCodeToBackend = async (authorization) => {
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}auth/social`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-            code: authorization.code,
-            id_token: authorization.id_token,
-            name: authorization.user?.name ? `${authorization.user.name.firstName || ''} ${authorization.user.name.lastName || ''}`.trim() : undefined,
-            email: authorization.user?.email || undefined,
-            provider: 'apple',
-        }),
-    });
-
-    const data = await res.json();
-    if (data.success) {
-      alert(data.message);
-      localStorage.setItem('token', data.token);
-      router.push('/homepage');
-    } else {
-      alert(`Apple Sign-in failed: ${data.message}`);
-    }
-  } catch (error) {
-    console.error('Error sending Apple authorization to backend:', error);
-    alert('An error occurred during Apple Sign-in.');
-  }
+  // Dispatch socialAuth action from the store for Apple
+  await authStore.socialAuth({
+    code: authorization.code,
+    id_token: authorization.id_token,
+    name: authorization.user?.name ? `${authorization.user.name.firstName || ''} ${authorization.user.name.lastName || ''}`.trim() : undefined,
+    email: authorization.user?.email || undefined,
+    provider: 'apple',
+  });
 };
 
 const goBackToWebsite = () => {

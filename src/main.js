@@ -3,6 +3,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate' // Import the plugin
 
 // Vuetify
 import 'vuetify/styles'
@@ -23,9 +24,12 @@ const vuetify = createVuetify({
   },
 })
 
+const pinia = createPinia() // Create Pinia instance
+pinia.use(piniaPluginPersistedstate) // Use the persistence plugin
+
 const app = createApp(App)
 
-app.use(createPinia())
+app.use(pinia) // Use the configured Pinia instance
 app.use(router)
 app.use(vuetify)
 

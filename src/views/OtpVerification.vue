@@ -40,21 +40,23 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router'; // No need for useRouter here directly, as store handles navigation
+import { useAuthStore } from '@/stores/auth'; // Import the auth store
 
 const route = useRoute();
-const router = useRouter();
 const otp = ref('');
 const phoneNumber = ref('');
 const phoneNumberDisplay = ref('');
 
+const authStore = useAuthStore(); // Initialize the auth store
+
 onMounted(() => {
   if (route.query.phone) {
     phoneNumber.value = route.query.phone;
-    phoneNumberDisplay.value = route.query.phone;
+    phoneNumberDisplay.value = route.query.phone; // Display the phone number from query
   } else {
-    alert('Phone number not provided for OTP verification.');
-    router.push('/signup');
+    alert('Phone number not provided for OTP verification. Redirecting to signup.');
+    authStore.router.push('/signup'); // Use router from store
   }
 });
 
@@ -64,55 +66,14 @@ const handleOtpVerification = async () => {
     return;
   }
 
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}auth/verify-otp`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        phoneNumber: phoneNumber.value,
-        otp: otp.value,
-      }),
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      alert(data.message);
-      localStorage.setItem('token', data.token);
-      router.push('/homepage');
-    } else {
-      alert(`OTP verification failed: ${data.message}`);
-    }
-  } catch (error) {
-    console.error('Error during OTP verification request:', error);
-    alert('An error occurred during OTP verification. Please try again.');
-  }
+  // Dispatch verifyOtp action from the store
+  await authStore.verifyOtp(phoneNumber.value, otp.value);
+  // Redirection is handled inside the store action, so no need for router.push here
 };
 
 const resendOtp = async () => {
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}auth/resend-otp`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        phoneNumber: phoneNumber.value,
-      }),
-    });
-
-    const data = await res.json();
-    if (data.success) {
-      alert('New OTP sent to your phone number!');
-    } else {
-      alert(`Failed to resend OTP: ${data.message}`);
-    }
-  } catch (error) {
-    console.error('Error resending OTP:', error);
-    alert('An error occurred while trying to resend OTP.');
-  }
+  // Dispatch resendOtp action from the store
+  await authStore.resendOtp(phoneNumber.value);
 };
 </script>
 

@@ -54,7 +54,7 @@
             </v-list>
           </v-menu>
           <v-avatar color="#8B5CF6" size="36" class="ml-4 cursor-pointer" @click="goToProfile">
-            <span class="text-white text-sm">JD</span>
+            <span class="text-white text-sm">{{ authStore.userInitials }}</span>
           </v-avatar>
           <v-btn
             text
@@ -115,8 +115,10 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth'; // Import the auth store
 
 const router = useRouter();
+const authStore = useAuthStore(); // Initialize the auth store
 
 const selectedLanguage = ref('en');
 const languages = ref([
@@ -159,6 +161,14 @@ const studios = ref([
   },
 ]);
 
+// The truncateText function is no longer needed for the tagline but kept for reference if needed elsewhere.
+// const truncateText = (text, maxLength) => {
+//   if (text.length > maxLength) {
+//     return text.substring(0, maxLength) + '...';
+//   }
+//   return text;
+// };
+
 const goToProjectHistory = () => {
  router.push('/project-history');
 };
@@ -176,7 +186,7 @@ const startStudio = (studioId) => {
 };
 
 const logout = () => {
-  router.push('/');
+  authStore.logout(); // Dispatch logout action from the store
 };
 
 </script>
@@ -329,7 +339,7 @@ const logout = () => {
 
 .studio-card-title {
   color: white !important;
-  font-size: 1.75rem !important;
+  font-size: 1.5rem !important; /* Reduced from 1.75rem */
   font-weight: bold !important;
   margin-bottom: 0.5rem;
   white-space: normal !important;
@@ -342,6 +352,9 @@ const logout = () => {
   color: #9CA3AF !important;
   font-size: 0.95rem !important;
   margin-bottom: 1rem;
+  white-space: normal !important; /* Ensure text wraps */
+  overflow: visible !important; /* Ensure content is not hidden */
+  text-overflow: clip !important; /* Prevent ellipsis from default Vuetify styles if any */
 }
 
 .studio-card-features {

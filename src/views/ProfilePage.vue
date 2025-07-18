@@ -25,7 +25,7 @@
         <div class="profile-card">
           <div class="profile-avatar-section">
             <v-avatar size="100" color="#8B5CF6" class="profile-avatar">
-              <span class="text-white text-h5">{{ userProfile.firstName ? userProfile.firstName.charAt(0) : '' }}{{ userProfile.lastName ? userProfile.lastName.charAt(0) : '' }}</span>
+              <span class="text-white text-h5">{{ authStore.userInitials }}</span>
             </v-avatar>
             <v-btn
               class="change-avatar-button"
@@ -166,21 +166,43 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth'; // Import the auth store
 
 const router = useRouter();
+const authStore = useAuthStore(); // Initialize the auth store
 
+// Initialize userProfile with data from the store if available
 const userProfile = reactive({
-  firstName: 'John',
-  lastName: 'Doe',
-  email: 'john.doe@example.com',
-  phoneNumber: '+255712345678',
+  firstName: '',
+  lastName: '',
+  email: '',
+  phoneNumber: '',
   password: '',
   confirmPassword: '',
   notificationsEnabled: true,
   language: 'English',
 });
+
+// Watch for changes in the auth store's user object and update userProfile
+watch(() => authStore.user, (newUser) => {
+  if (newUser) {
+    userProfile.firstName = newUser.firstName || '';
+    userProfile.lastName = newUser.lastName || '';
+    userProfile.email = newUser.email || '';
+    userProfile.phoneNumber = newUser.phoneNumber || '';
+    // Do not set password or confirmPassword from store directly
+  } else {
+    // Clear profile if user logs out
+    userProfile.firstName = '';
+    userProfile.lastName = '';
+    userProfile.email = '';
+    userProfile.phoneNumber = '';
+    userProfile.password = '';
+    userProfile.confirmPassword = '';
+  }
+}, { immediate: true }); // Run immediately to populate on mount if user is already logged in
 
 const showPassword = ref(false);
 const languages = ['English', 'Swahili', 'French', 'German'];
@@ -193,28 +215,40 @@ const changeProfilePicture = () => {
   alert('Functionality to change profile picture would be implemented here.');
 };
 
-const saveChanges = () => {
+const saveChanges = async () => {
   // Basic validation for password change
-  if (userProfile.password !== userProfile.confirmPassword) {
+  if (userProfile.password && userProfile.password !== userProfile.confirmPassword) {
     alert('New password and confirm password do not match.');
     return;
   }
 
-  // In a real application, you would send userProfile data to your backend API
-  // e.g., fetch('/api/profile', { method: 'PUT', body: JSON.stringify(userProfile) })
-  alert('Profile changes saved! (Data logged to console)');
-  console.log('Updated Profile Data:', JSON.stringify(userProfile, null, 2));
-  // Clear password fields after successful save
-  userProfile.password = '';
-  userProfile.confirmPassword = '';
+  // Prepare data to send to the store (and potentially backend)
+  const updates = {
+    firstName: userProfile.firstName,
+    lastName: userProfile.lastName,
+    notificationsEnabled: userProfile.notificationsEnabled,
+    language: userProfile.language,
+  };
+
+  if (userProfile.password) {
+    updates.password = userProfile.password;
+  }
+
+  // Dispatch updateProfile action from the store
+  const result = await authStore.updateProfile(updates);
+
+  if (result.success) {
+    // Clear password fields after successful save
+    userProfile.password = '';
+    userProfile.confirmPassword = '';
+  }
 };
 
 const confirmDeleteAccount = () => {
   if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
     alert('Account deletion initiated. (This is a placeholder action)');
     // In a real application, you would call your backend API to delete the account
-    // Then potentially log out the user and redirect to a sign-up/login page
-    router.push('/');
+    authStore.logout(); // Then log out the user via store action
   }
 };
 </script>
