@@ -5,7 +5,11 @@ import HomePage from '../views/HomePage.vue'
 import LogoCraft from '../views/LogoCraft.vue'
 import LeboGpt from '../views/LeboGpt.vue'
 import Postra from '../views/PostraView.vue'
-import OtpVerification from '../views/otpVerification.vue' // Import the new OTP verification component
+import OtpVerification from '../views/otpVerification.vue'
+import ProjectHistory from '../views/ProjectHistory.vue' // New import
+import TipsAndGuidance from '../views/TipsAndGuidance.vue' // New import
+import ProfilePage from '../views/ProfilePage.vue' // New import
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -44,7 +48,22 @@ const router = createRouter({
       path: '/verify-otp',
       name: 'verify-otp',
       component: OtpVerification,
-      props: true 
+      props: true
+    },
+       {
+      path: '/project-history',
+      name: 'project-history',
+      component: ProjectHistory,
+    },
+    {
+      path: '/tips-guidance',
+      name: 'tips-guidance',
+      component: TipsAndGuidance,
+    },
+    { 
+      path: '/profile',
+      name: 'profile',
+      component: ProfilePage,
     },
   ],
 })

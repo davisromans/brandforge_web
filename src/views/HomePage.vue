@@ -53,18 +53,19 @@
               </v-list-item>
             </v-list>
           </v-menu>
-          <v-btn
-            icon
-            class="header-button"
-            @click="toggleTheme"
-            variant="text"
-            color="white"
-          >
-            <v-icon>{{ isDarkMode ? 'mdi-white-balance-sunny' : 'mdi-moon-waning-gibbous' }}</v-icon>
-          </v-btn>
           <v-avatar color="#8B5CF6" size="36" class="ml-4 cursor-pointer" @click="goToProfile">
             <span class="text-white text-sm">JD</span>
           </v-avatar>
+          <v-btn
+            text
+            class="header-button ml-4"
+            prepend-icon="mdi-logout"
+            @click="logout"
+            variant="text"
+            color="white"
+          >
+            Logout
+          </v-btn>
         </div>
       </header>
 
@@ -105,20 +106,7 @@
           </v-card>
         </div>
 
-        <!-- <div class="smart-prompt-cta">
-          <h3 class="smart-prompt-title">Need a little guidance?</h3>
-          <p class="smart-prompt-subtitle">Our Smart Prompting Assistant can help you get started quickly.</p>
-          <v-btn
-            color="#8B5CF6"
-            size="large"
-            class="smart-prompt-button"
-            @click="launchSmartPrompt"
-          >
-            Launch Assistant
-            <v-icon right>mdi-chat-outline</v-icon>
-          </v-btn>
-        </div> -->
-      </div>
+        </div>
 
     </div>
   </div>
@@ -130,12 +118,9 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
-const isDarkMode = ref(true);
 const selectedLanguage = ref('en');
 const languages = ref([
   { title: 'English', value: 'en' },
-  { title: 'Swahili', value: 'sw' },
-  { title: 'French', value: 'fr' },
 ]);
 
 const studios = ref([
@@ -175,29 +160,25 @@ const studios = ref([
 ]);
 
 const goToProjectHistory = () => {
-  alert('Navigating to Project History...');
+ router.push('/project-history');
 };
 
 const showTips = () => {
-  alert('Displaying In-App Tips & Guidance...');
-};
-
-const toggleTheme = () => {
-  isDarkMode.value = !isDarkMode.value;
-  alert(`Switched to ${isDarkMode.value ? 'Dark' : 'Light'} Mode! (Visual change not implemented in this snippet)`);
+   router.push('/tips-guidance');
 };
 
 const goToProfile = () => {
-  alert('Navigating to User Profile...');
+  router.push('/profile');
 };
 
 const startStudio = (studioId) => {
   router.push(`/studio/${studioId.toLowerCase()}`);
 };
 
-// const launchSmartPrompt = () => {
-//   alert('Launching Smart Prompting Assistant...');
-// };
+const logout = () => {
+  router.push('/');
+};
+
 </script>
 
 <style scoped>
