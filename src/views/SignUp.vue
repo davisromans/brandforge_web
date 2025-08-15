@@ -3,25 +3,12 @@
     <div class="main-container">
 
       <div class="left-section">
-        <v-carousel
-          v-model="currentCarouselIndex"
-          cycle
-          height="100%"
-          hide-delimiter-background
-          :show-arrows="false"
-          :interval="5000"
-          :touch="{
-            left: () => {},
-            right: () => {},
-          }"
-          class="auth-carousel"
-        >
-          <v-carousel-item
-            v-for="(item, i) in carouselItems"
-            :key="i"
-            :src="item.src"
-            cover
-          ></v-carousel-item>
+        <v-carousel v-model="currentCarouselIndex" cycle height="100%" hide-delimiter-background :show-arrows="false"
+          :interval="5000" :touch="{
+            left: () => { },
+            right: () => { },
+          }" class="auth-carousel">
+          <v-carousel-item v-for="(item, i) in carouselItems" :key="i" :src="item.src" cover></v-carousel-item>
         </v-carousel>
 
         <div class="overlay-content">
@@ -29,32 +16,20 @@
             <div class="logo-text">
               <span class="logo-color">BrandForge</span>
             </div>
-            <v-btn
-              text
-              class="back-button"
-              append-icon="mdi-arrow-right"
-              @click="goBackToWebsite"
-              variant="text"
-              color="white"
-            >
+            <v-btn text class="back-button" append-icon="mdi-arrow-right" @click="goBackToWebsite" variant="text"
+              color="white">
               Go to website
             </v-btn>
           </div>
 
           <div class="bottom-text-container">
             <div class="bottom-text">
-               Smart Design, <br>Seamless Experience
+              Smart Design, <br>Seamless Experience
             </div>
             <div class="auth-carousel-indicators">
-              <v-btn
-                v-for="(item, i) in carouselItems"
-                :key="i"
-                :class="{ 'v-btn--active': i === currentCarouselIndex }"
-                class="carousel-indicator-btn"
-                @click="currentCarouselIndex = i"
-                icon
-                size="x-small"
-              ></v-btn>
+              <v-btn v-for="(item, i) in carouselItems" :key="i"
+                :class="{ 'v-btn--active': i === currentCarouselIndex }" class="carousel-indicator-btn"
+                @click="currentCarouselIndex = i" icon size="x-small"></v-btn>
             </div>
           </div>
         </div>
@@ -69,92 +44,31 @@
 
         <form @submit.prevent="handleSignUp">
           <div class="form-grid">
-            <v-text-field
-              v-model="firstName"
-              label="First name"
-              variant="outlined"
-              density="comfortable"
-              class="custom-input"
-              bg-color="#2D2D2D"
-              color="#8B5CF6"
-              hide-details
-              clearable
-            ></v-text-field>
-            <v-text-field
-              v-model="lastName"
-              label="Last name"
-              variant="outlined"
-              density="comfortable"
-              class="custom-input"
-              bg-color="#2D2D2D"
-              color="#8B5CF6"
-              hide-details
-              clearable
-            ></v-text-field>
+            <v-text-field v-model="firstName" label="First name" variant="outlined" density="comfortable"
+              class="custom-input" bg-color="#2D2D2D" color="#8B5CF6" hide-details clearable></v-text-field>
+            <v-text-field v-model="lastName" label="Last name" variant="outlined" density="comfortable"
+              class="custom-input" bg-color="#2D2D2D" color="#8B5CF6" hide-details clearable></v-text-field>
           </div>
 
           <div class="phone-input-group form-field-margin">
-            <v-select
-              v-model="selectedCountryCode"
-              :items="countryCodes"
-              label="Code"
-              variant="outlined"
-              density="comfortable"
-              class="custom-input country-code-selector"
-              bg-color="#2D2D2D"
-              color="#8B5CF6"
-              hide-details
-              required
-            ></v-select>
-            <v-text-field
-              v-model="phoneNumber"
-              label="Phone Number"
-              type="tel"
-              variant="outlined"
-              density="comfortable"
-              class="custom-input phone-number-field"
-              bg-color="#2D2D2D"
-              color="#8B5CF6"
-              hide-details
-              clearable
-              required
-            ></v-text-field>
+            <v-select v-model="selectedCountryCode" :items="countryCodes" label="Code" variant="outlined"
+              density="comfortable" class="custom-input country-code-selector" bg-color="#2D2D2D" color="#8B5CF6"
+              hide-details required></v-select>
+            <v-text-field v-model="phoneNumber" label="Phone Number" type="tel" variant="outlined" density="comfortable"
+              class="custom-input phone-number-field" bg-color="#2D2D2D" color="#8B5CF6" hide-details clearable
+              required></v-text-field>
           </div>
 
-          <v-text-field
-            v-model="email"
-            label="Email (Optional)"
-            type="email"
-            variant="outlined"
-            density="comfortable"
-            class="custom-input form-field-margin"
-            bg-color="#2D2D2D"
-            color="#8B5CF6"
-            hide-details
-            clearable
-          ></v-text-field>
+          <v-text-field v-model="email" label="Email (Optional)" type="email" variant="outlined" density="comfortable"
+            class="custom-input form-field-margin" bg-color="#2D2D2D" color="#8B5CF6" hide-details
+            clearable></v-text-field>
 
-          <v-text-field
-            v-model="password"
-            label="Enter your password"
-            :type="showPassword ? 'text' : 'password'"
-            variant="outlined"
-            density="comfortable"
-            class="custom-input form-field-margin"
-            bg-color="#2D2D2D"
-            color="#8B5CF6"
-            hide-details
-            clearable
-            :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-            @click:append-inner="showPassword = !showPassword"
-          ></v-text-field>
+          <v-text-field v-model="password" label="Enter your password" :type="showPassword ? 'text' : 'password'"
+            variant="outlined" density="comfortable" class="custom-input form-field-margin" bg-color="#2D2D2D"
+            color="#8B5CF6" hide-details clearable :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+            @click:append-inner="showPassword = !showPassword"></v-text-field>
 
-          <v-checkbox
-            v-model="agreeToTerms"
-            color="#8B5CF6"
-            class="custom-checkbox form-checkbox-margin"
-            hide-details
-          >
+          <v-checkbox v-model="agreeToTerms" color="#8B5CF6" class="custom-checkbox form-checkbox-margin" hide-details>
             <template v-slot:label>
               <span class="checkbox-label">I agree to the
                 <a href="#" class="terms-link">Terms & Conditions</a>
@@ -162,14 +76,8 @@
             </template>
           </v-checkbox>
 
-          <v-btn
-            type="submit"
-            block
-            color="#7C3AED"
-            size="large"
-            class="create-account-button"
-            :disabled="!agreeToTerms || !phoneNumber || !password"
-          >
+          <v-btn type="submit" block color="#7C3AED" size="large" class="create-account-button"
+            :disabled="!agreeToTerms || !phoneNumber || !password">
             Create account
           </v-btn>
         </form>
@@ -182,17 +90,9 @@
 
         <div class="social-buttons-container-vertical">
           <div id="google-signin-button" class="social-button-container"></div>
-          <v-btn
-            block
-            size="large"
-            class="social-button apple-button"
-            prepend-icon="mdi-apple"
-            bg-color="#1a1a1a"
-            @click="signInWithApple"
-            variant="outlined"
-            color="#4B5563"
-          >
-          Apple
+          <v-btn block size="large" class="social-button apple-button" prepend-icon="mdi-apple" bg-color="#1a1a1a"
+            @click="signInWithApple" variant="outlined" color="#4B5563">
+            Apple
           </v-btn>
         </div>
       </div>
@@ -251,8 +151,8 @@ const handleSignUp = async () => {
     return;
   }
   if (password.value.length < 6) {
-      alert('Password must be at least 6 characters long.');
-      return;
+    alert('Password must be at least 6 characters long.');
+    return;
   }
   if (!agreeToTerms.value) {
     alert('Please agree to the Terms & Conditions.');
@@ -271,7 +171,7 @@ const handleSignUp = async () => {
   });
 
   if (result.success && result.action === 'verify-otp') {
-      router.push(`/verify-otp?phone=${encodeURIComponent(fullPhoneNumber)}`);
+    router.push(`/verify-otp?phone=${encodeURIComponent(fullPhoneNumber)}`);
   }
   // If result.action is 'logged-in', redirection is handled by the store
 };
@@ -349,7 +249,7 @@ onMounted(() => {
             size: 'large',
             text: 'signup_with', // Changed to signup_with for signup page
             shape: 'pill',
-            theme: 'outline',
+            theme: 'filled_black',
             locale: 'en',
           }
         );
@@ -385,11 +285,13 @@ onUnmounted(() => {
   box-sizing: border-box;
   overflow: hidden;
 }
+
 @media (min-width: 640px) {
   .auth-page-wrapper {
     padding: 1.5rem;
   }
 }
+
 @media (min-width: 1024px) {
   .auth-page-wrapper {
     padding: 2rem;
@@ -411,6 +313,7 @@ onUnmounted(() => {
   height: 100%;
   box-sizing: border-box;
 }
+
 @media (min-width: 1024px) {
   .main-container {
     flex-direction: row;
@@ -427,6 +330,7 @@ onUnmounted(() => {
   flex-shrink: 0;
   box-sizing: border-box;
 }
+
 @media (min-width: 1024px) {
   .left-section {
     width: 50%;
@@ -443,13 +347,16 @@ onUnmounted(() => {
   flex-direction: column;
   justify-content: space-between;
   padding: 2rem;
-    color: white; /* Ensure text is visible on overlay */
+  color: white;
+  /* Ensure text is visible on overlay */
 }
+
 @media (min-width: 640px) {
   .overlay-content {
     padding: 2.5rem;
   }
 }
+
 @media (min-width: 1024px) {
   .overlay-content {
     padding: 3rem;
@@ -497,11 +404,13 @@ onUnmounted(() => {
   line-height: 1.25;
   margin-bottom: 1rem;
 }
+
 @media (min-width: 640px) {
   .bottom-text {
     font-size: 2.25rem;
   }
 }
+
 @media (min-width: 1024px) {
   .bottom-text {
     font-size: 3rem;
@@ -521,11 +430,13 @@ onUnmounted(() => {
   box-sizing: border-box;
   min-height: 0;
 }
+
 @media (min-width: 640px) {
   .right-section {
     padding: 3rem;
   }
 }
+
 @media (min-width: 1024px) {
   .right-section {
     width: 50%;
@@ -540,6 +451,7 @@ onUnmounted(() => {
   font-weight: bold;
   margin-bottom: 0.5rem;
 }
+
 @media (min-width: 640px) {
   .form-title {
     font-size: 2.25rem;
@@ -557,6 +469,7 @@ onUnmounted(() => {
   font-weight: 500;
   text-decoration: none;
 }
+
 .login-link:hover {
   color: #A78BFA;
 }
@@ -567,6 +480,7 @@ onUnmounted(() => {
   gap: 1rem;
   margin-bottom: 1rem;
 }
+
 @media (min-width: 640px) {
   .form-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -591,6 +505,7 @@ onUnmounted(() => {
   font-weight: 500;
   text-decoration: none;
 }
+
 .terms-link:hover {
   color: #A78BFA;
 }
@@ -604,6 +519,7 @@ onUnmounted(() => {
   text-transform: none !important;
   transition: background-color 300ms ease;
 }
+
 .create-account-button:hover {
   background-color: #6D28D9 !important;
 }
@@ -626,7 +542,8 @@ onUnmounted(() => {
   margin: 0 1rem;
   color: #6B7280;
   font-size: 0.875rem;
-    color: white; /* Ensure text is visible on overlay */
+  color: white;
+  /* Ensure text is visible on overlay */
 }
 
 .social-buttons-container-vertical {
@@ -642,6 +559,7 @@ onUnmounted(() => {
   text-transform: none !important;
   transition: background-color 300ms ease;
 }
+
 .social-button:hover {
   background-color: #2D2D2D !important;
 }
@@ -664,11 +582,11 @@ onUnmounted(() => {
 }
 
 .custom-checkbox .v-label {
-    color: #9CA3AF !important;
+  color: #9CA3AF !important;
 }
 
 .custom-checkbox .v-selection-control__wrapper {
-    color: #8B5CF6 !important;
+  color: #8B5CF6 !important;
 }
 
 /* Styles for phone input group */

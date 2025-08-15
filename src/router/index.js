@@ -5,7 +5,7 @@ import HomePage from '../views/HomePage.vue'
 import LogoCraft from '../views/LogoCraft.vue'
 import LeboGpt from '../views/LeboGpt.vue'
 import Postra from '../views/PostraView.vue'
-import OtpVerification from '../views/otpVerification.vue'
+import OtpVerification from '../views/OtpVerification.vue'
 import ProjectHistory from '../views/ProjectHistory.vue' // New import
 import TipsAndGuidance from '../views/TipsAndGuidance.vue' // New import
 import ProfilePage from '../views/ProfilePage.vue' // New import
@@ -60,7 +60,7 @@ const router = createRouter({
       name: 'tips-guidance',
       component: TipsAndGuidance,
     },
-    { 
+    {
       path: '/profile',
       name: 'profile',
       component: ProfilePage,
